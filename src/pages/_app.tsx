@@ -12,8 +12,9 @@ import type { AppProps } from "next/app";
 
 import { Header } from "@/components/Header";
 import Head from "next/head";
+import { useState } from "react";
 
-const queryClient = new QueryClient({
+const queryClientConfig = {
 	defaultOptions: {
 		queries: {
 			refetchOnWindowFocus: false,
@@ -21,9 +22,10 @@ const queryClient = new QueryClient({
 			staleTime: Infinity,
 		},
 	},
-});
+};
 
-export default function App({ Component, pageProps }: AppProps) {
+const App = ({ Component, pageProps }: AppProps) => {
+	const [queryClient] = useState(() => new QueryClient(queryClientConfig));
 	return (
 		<>
 			<Head>
@@ -38,4 +40,6 @@ export default function App({ Component, pageProps }: AppProps) {
 			</QueryClientProvider>
 		</>
 	);
-}
+};
+
+export default App;
