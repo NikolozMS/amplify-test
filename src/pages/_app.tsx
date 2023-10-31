@@ -1,6 +1,4 @@
-import "@/styles/globals.css";
-import "@/styles/normalize.css";
-import React from "react";
+import React, { useState } from "react";
 
 import {
 	HydrationBoundary,
@@ -13,7 +11,9 @@ import type { AppProps } from "next/app";
 
 import { Header } from "@/components/Header";
 import Head from "next/head";
-import { useState } from "react";
+
+import "@/styles/globals.css";
+import "@/styles/normalize.css";
 
 const queryClientConfig = {
 	defaultOptions: {
