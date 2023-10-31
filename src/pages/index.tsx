@@ -1,6 +1,6 @@
 // import dynamic from "next/dynamic";
-import React from "react";
-import { QueryClient, dehydrate } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { QueryClient, dehydrate, useQuery } from "@tanstack/react-query";
 import Head from "next/head";
 // import { Suspense } from "react";
 
@@ -10,6 +10,10 @@ import { getCount } from "@/services/getCount";
 import { ParsedUrlQuery } from "querystring";
 
 import FiltersContainer from "@/components/filters/FiltersContainer";
+import { ProductHeader } from "@/components/Product/ProductHeader";
+import { SearchTypes } from "@/types/searchTypes";
+import { Layout } from "@/components/Layout";
+import { getProducts } from "@/services/getProducts";
 
 // const FiltersContainer = dynamic(
 // 	() => import("@/components/filters/FiltersContainer")
@@ -21,16 +25,23 @@ export const getServerSideProps = async ({
 	query: ParsedUrlQuery;
 }) => {
 	const queryClient = new QueryClient();
+
 	const search = {
 		TypeID: "0",
 		CurrencyID: "3",
 		...query,
 	};
+
 	const queryKey = ["amount", search];
 
 	await queryClient.prefetchQuery({
 		queryKey,
 		queryFn: () => getCount(search as ParsedUrlQuery),
+	});
+
+	await queryClient.prefetchQuery({
+		queryKey: ["prods", search],
+		queryFn: () => getProducts(search as ParsedUrlQuery),
 	});
 
 	return {
@@ -42,6 +53,21 @@ export const getServerSideProps = async ({
 };
 
 const Home = ({ query }: { query: ParsedUrlQuery }) => {
+	const [search, setSearch] = useState<SearchTypes>({
+		TypeID: 0,
+		CurrencyID: 3,
+		...query,
+	});
+
+	const prods = useQuery({
+		queryKey: ["prods", search],
+		queryFn: () => getProducts(search as ParsedUrlQuery),
+	});
+
+	const { isLoading, data } = useQuery({
+		queryKey: ["amount", search],
+		queryFn: ({ signal }) => getCount(search as ParsedUrlQuery, signal),
+	});
 	return (
 		<>
 			<Head>
@@ -50,20 +76,28 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 				<link rel="icon" href="/favicon.ico" />
 				<title>MyAuto</title>
 			</Head>
-			<div className="flex flex-col items-start justify-start max-w-[146rem]  mx-auto mt-[3.2rem]">
-				<BreadCrumb />
+			<Layout>
+				<div className="flex flex-col items-start justify-start max-w-[146rem]  mx-auto mt-[3.2rem]">
+					<BreadCrumb />
 
-				<div className="flex gap-8 mt-8 w-full">
-					{/* <Suspense fallback={<div>Loading...</div>}> */}
-					<FiltersContainer query={query} />
-					{/* </Suspense> */}
-					<main className="border border-solid border-black-900 flex flex-1 ">
-						<header></header>
+					<div className="flex gap-8 mt-8 w-full">
+						{/* <Suspense fallback={<div>Loading...</div>}> */}
+						<FiltersContainer
+							isLoading={isLoading}
+							search={search}
+							query={query}
+							setSearch={setSearch}
+							foundAmount={data?.count ?? 0}
+						/>
+						{/* </Suspense> */}
+						<main className="border border-solid border-black-900 flex flex-col flex-1 ">
+							<ProductHeader foundAmount={data?.count ?? 0} />
 
-						<section className="border border-solid bg-red-500 w-full"></section>
-					</main>
+							<section className="border border-solid bg-red-500 w-full h-[400px]"></section>
+						</main>
+					</div>
 				</div>
-			</div>
+			</Layout>
 		</>
 	);
 };

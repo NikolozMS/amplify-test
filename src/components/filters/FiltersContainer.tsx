@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
 import { FiltersAction } from "./FiltersAction";
 import { FiltersBody } from "./FiltersBody";
@@ -12,18 +12,20 @@ import { useQuery } from "@tanstack/react-query";
 import { SearchTypes } from "@/types/searchTypes";
 import { ParsedUrlQuery } from "querystring";
 
-const FiltersContainer = ({ query }: { query: ParsedUrlQuery }) => {
+const FiltersContainer = ({
+	query,
+	setSearch,
+	search,
+	isLoading,
+	foundAmount,
+}: {
+	query: ParsedUrlQuery;
+	setSearch: Dispatch<SetStateAction<SearchTypes>>;
+	search: SearchTypes;
+	isLoading: boolean;
+	foundAmount?: number;
+}) => {
 	const { push } = useRouter();
-	const [search, setSearch] = useState<SearchTypes>({
-		TypeID: 0,
-		CurrencyID: 3,
-		...query,
-	});
-
-	const { isLoading, data } = useQuery({
-		queryKey: ["amount", search],
-		queryFn: ({ signal }) => getCount(search as ParsedUrlQuery, signal),
-	});
 
 	const handleFilterUpdate = async (newFilter: SearchTypes) => {
 		setSearch((prevState) => ({ ...prevState, ...newFilter }));
@@ -39,7 +41,7 @@ const FiltersContainer = ({ query }: { query: ParsedUrlQuery }) => {
 			<FiltersHeader search={search} setSearch={setSearch} />
 			<FiltersBody search={search} handleFilterUpdate={handleFilterUpdate} />
 			<FiltersAction
-				foundAmount={data?.count ?? 0}
+				foundAmount={foundAmount}
 				isLoading={isLoading}
 				onSubmit={handleSubmit}
 			/>

@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Arrow } from "../icons/Arrow";
 import { Category } from "@/types/CategoryType";
 import { ManufacturerType } from "@/types/ManufacturerType";
+import { PeriodAndSortType } from "@/types/PeriodsType";
 
 type SellOrRent = {
 	id: number;
@@ -11,11 +12,11 @@ type SellOrRent = {
 type Props = {
 	input?: string;
 	label?: string;
-	data?: Category[] | ManufacturerType[] | SellOrRent[];
-	setFormInputs: Dispatch<SetStateAction<any>>;
+	data?: Category[] | ManufacturerType[] | SellOrRent[] | PeriodAndSortType[];
+	setFormInputs?: Dispatch<SetStateAction<any>>;
 	titleKey: any;
 	idKey: any;
-	searchString: string;
+	searchString?: string;
 	typeId?: number;
 };
 
@@ -38,29 +39,33 @@ export const DropDown = ({
 
 	const changeDropdownText = (el: string, id: string) => {
 		setSelectPlaceHolder(el);
-		setFormInputs({ [searchString]: id });
+		if (setFormInputs && searchString) {
+			setFormInputs({ [searchString]: id });
+		}
 		setIsDropdownOpen(false);
 	};
 
+	const inputClassname = label
+		? "absolute top-[3.7rem] pointer-events-none right-6"
+		: "absolute top-[1.7rem] pointer-events-none right-4";
+
 	return (
 		<div className="relative sm:max-w-[397px] w-full cursor-pointer ">
-			<p
-				className="text-[1.2rem] pb-[0.8rem]"
-				onClick={() => setIsDropdownOpen((prev) => !prev)}
-			>
-				{label}
-			</p>
+			{label && (
+				<p
+					className="text-[1.2rem] pb-[0.8rem]"
+					onClick={() => setIsDropdownOpen((prev) => !prev)}
+				>
+					{label}
+				</p>
+			)}
 			<div
 				className={`border border-solid border-gray-300 h-[4rem] text-black-900 text-[1.3rem] rounded-xl p-5 pt-[1.1rem] pr-[.8rem]`}
 				onClick={() => setIsDropdownOpen((prev) => !prev)}
 			>
 				{selectPlaceHolder}
 			</div>
-			<span
-				className={`absolute top-[3.7rem] pointer-events-none right-6 ${
-					isDropdownOpen && "rotate-180"
-				}`}
-			>
+			<span className={`${inputClassname} ${isDropdownOpen && "rotate-180"}`}>
 				<Arrow style={{ transform: "rotate(90deg)" }} />
 			</span>
 			<ul
