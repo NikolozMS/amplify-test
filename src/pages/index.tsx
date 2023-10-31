@@ -1,4 +1,5 @@
 // import dynamic from "next/dynamic";
+import React from "react";
 import { QueryClient, dehydrate } from "@tanstack/react-query";
 import Head from "next/head";
 // import { Suspense } from "react";
