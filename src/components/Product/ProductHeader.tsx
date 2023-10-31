@@ -1,3 +1,8 @@
 export const ProductHeader = () => {
-	return <></>;
+	return (
+		<header>
+			<h5></h5>
+			<div></div>
+		</header>
+	);
 };
