@@ -1,16 +1,18 @@
-import dynamic from "next/dynamic";
+// import dynamic from "next/dynamic";
 import { QueryClient, dehydrate } from "@tanstack/react-query";
 import Head from "next/head";
-import { Suspense } from "react";
+// import { Suspense } from "react";
 
 import { BreadCrumb } from "@/components/BreadCrumbs";
 
 import { getCount } from "@/services/getCount";
 import { ParsedUrlQuery } from "querystring";
 
-const FiltersContainer = dynamic(
-	() => import("@/components/filters/FiltersContainer")
-);
+import FiltersContainer from "@/components/filters/FiltersContainer";
+
+// const FiltersContainer = dynamic(
+// 	() => import("@/components/filters/FiltersContainer")
+// );
 
 export const getServerSideProps = async ({
 	query,
@@ -51,9 +53,9 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 				<BreadCrumb />
 
 				<div className="flex gap-8 mt-8 w-full">
-					<Suspense fallback={<div>Loading...</div>}>
-						<FiltersContainer query={query} />
-					</Suspense>
+					{/* <Suspense fallback={<div>Loading...</div>}> */}
+					<FiltersContainer query={query} />
+					{/* </Suspense> */}
 					<main className="border border-solid border-black-900 flex flex-1 ">
 						<header></header>
 
