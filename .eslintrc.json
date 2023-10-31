@@ -1,3 +1,15 @@
 {
-  "extends": "next/core-web-vitals"
+	"extends": "next/core-web-vitals",
+	"rules": {
+		"no-unused-vars": [
+			"error",
+			{
+				"vars": "local",
+				"args": "after-used",
+				"ignoreRestSiblings": true,
+				"argsIgnorePattern": "^_"
+			}
+		],
+		"react-hooks/exhaustive-deps": "off"
+	}
 }
