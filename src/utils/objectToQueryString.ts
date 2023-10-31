@@ -6,7 +6,7 @@ export function objectToQueryString(params: ParsedUrlQuery): string {
 	for (const key in params) {
 		if (Object.prototype.hasOwnProperty.call(params, key)) {
 			const encodedKey: string = encodeURIComponent(key);
-
+			// @ts-ignore
 			const encodedValue: string = encodeURIComponent(params[key]!.toString());
 			keyValuePairs.push(`${encodedKey}=${encodedValue}`);
 		}
