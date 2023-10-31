@@ -64,6 +64,8 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		queryFn: () => getProducts(search as ParsedUrlQuery),
 	});
 
+	console.log(prods);
+
 	const { isLoading, data } = useQuery({
 		queryKey: ["amount", search],
 		queryFn: ({ signal }) => getCount(search as ParsedUrlQuery, signal),

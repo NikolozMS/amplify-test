@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 
 import { FiltersAction } from "./FiltersAction";
 import { FiltersBody } from "./FiltersBody";
@@ -6,14 +6,11 @@ import { FiltersHeader } from "./FiltersHeader";
 
 import { objectToQueryString } from "@/utils/objectToQueryString";
 
-import { getCount } from "@/services/getCount";
 import { useRouter } from "next/router";
-import { useQuery } from "@tanstack/react-query";
 import { SearchTypes } from "@/types/searchTypes";
 import { ParsedUrlQuery } from "querystring";
 
 const FiltersContainer = ({
-	query,
 	setSearch,
 	search,
 	isLoading,
