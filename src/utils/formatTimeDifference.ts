@@ -2,6 +2,7 @@ export const formatTimeDifference = (dateString: string) => {
 	const targetDate = new Date(dateString);
 	const currentDate = new Date();
 
+	// @ts-ignore
 	const timeDifference = Math.abs(currentDate - targetDate); // Difference in milliseconds
 
 	const minutesDifference = Math.floor(timeDifference / (1000 * 60));
