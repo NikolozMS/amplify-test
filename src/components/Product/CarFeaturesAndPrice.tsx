@@ -4,23 +4,10 @@ import { Speed } from "../icons/Speed";
 import { Wheel } from "../icons/Wheel";
 import { ProductType } from "@/types/ProductType";
 import { PriceCalculator } from "./PriceCalculator";
+import { fuelTypes, gearTypes } from "@/utils/staticData";
 
 const optionsStyles =
 	"text-[1.2rem] text-black-900 flex items-center gap-[1.2rem] w-[50%] md:w-[18.2rem] mb-[.6rem] md:mb-0";
-
-const fuelTypes = {
-	2: "ბენზინი",
-	3: "დიზელი",
-	6: "ჰიბრიდი",
-	7: "ელეტრო",
-};
-
-const gearTypes = {
-	1: "მექანიკა",
-	2: "ავტომატიკა",
-	3: "ტიპტრონიკი",
-	4: "ვარიატორი",
-};
 
 export const CarFeaturesAndPrice = ({ item }: { item: ProductType }) => {
 	return (

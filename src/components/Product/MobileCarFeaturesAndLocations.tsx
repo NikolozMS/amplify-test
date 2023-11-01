@@ -1,22 +1,9 @@
 import { ProductType } from "@/types/ProductType";
 import { Geo } from "../icons/Geo";
+import { fuelTypes, gearTypes } from "@/utils/staticData";
 
 const optionsStyles =
 	"text-[1.2rem] text-black-900 flex items-center gap-[1.2rem] min-w-[50%] md:w-[18.2rem] mb-[.7rem] md:mb-0";
-
-const fuelTypes = {
-	2: "ბენზინი",
-	3: "დიზელი",
-	6: "ჰიბრიდი",
-	7: "ელეტრო",
-};
-
-const gearTypes = {
-	1: "მექანიკა",
-	2: "ავტომატიკა",
-	3: "ტიპტრონიკი",
-	4: "ვარიატორი",
-};
 
 export const MobileCarFeaturesAndLocations = ({
 	item,

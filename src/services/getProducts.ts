@@ -20,7 +20,7 @@ export const getProducts = async (
 			queryString = queryString.replace("PriceTo=NaN", "");
 		}
 
-		url += `?Page=${page.pageParam}` + queryString;
+		url += `?Page=${page.pageParam}&` + queryString;
 	}
 
 	const resp = await axios.get(url);

@@ -19,6 +19,7 @@ import { getProducts } from "@/services/getProducts";
 import { Card } from "@/components/Product/Card";
 
 import FiltersContainer from "@/components/filters/FiltersContainer";
+import { useRouter } from "next/router";
 
 const defaultQueries = {
 	TypeID: 0,
@@ -31,16 +32,17 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		...query,
 	});
 
+	const { query: browserQuery } = useRouter();
+
 	const pageRef = useRef(0);
 
 	const searchAndQuery = useMemo(() => {
 		return {
 			...search,
 			...query,
+			...browserQuery,
 		};
-	}, []);
-
-	console.log(searchAndQuery);
+	}, [browserQuery]);
 
 	const {
 		data: products,
@@ -48,7 +50,8 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		fetchPreviousPage,
 	} = useInfiniteQuery({
 		queryKey: ["prods", searchAndQuery],
-		queryFn: (page) => getProducts(search as ParsedUrlQuery, page),
+		queryFn: (page) =>
+			getProducts({ ...search, ...browserQuery } as ParsedUrlQuery, page),
 		getNextPageParam: ({ meta }) => meta.current_page + 1,
 		getPreviousPageParam: ({ meta }) => meta.current_page - 1,
 		initialPageParam: 1,
@@ -56,7 +59,8 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 
 	const { isLoading, data } = useQuery({
 		queryKey: ["amount", search],
-		queryFn: ({ signal }) => getCount(search as ParsedUrlQuery, signal),
+		queryFn: ({ signal }) =>
+			getCount({ ...search, ...browserQuery } as ParsedUrlQuery, signal),
 	});
 
 	return (
@@ -84,6 +88,14 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 						<ProductHeader foundAmount={data?.count ?? 0} />
 						<button
 							onClick={() => {
+								pageRef.current--;
+								fetchPreviousPage();
+							}}
+						>
+							prev{" "}
+						</button>
+						<button
+							onClick={() => {
 								pageRef.current++;
 								fetchNextPage();
 							}}
@@ -91,7 +103,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 							next{" "}
 						</button>
 						<section className="flex flex-col md:gap-[1rem] w-full  mt-[1.6rem]">
-							{products!.pages[pageRef.current].items.map((item) => (
+							{products?.pages[pageRef.current].items?.map((item) => (
 								<Card key={item.car_id} item={item} />
 							))}
 						</section>

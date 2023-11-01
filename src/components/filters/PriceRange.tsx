@@ -3,7 +3,7 @@ import Switcher from "../common/Switch";
 import { useRouter } from "next/router";
 
 const inputClassNames =
-	"w-[9.4rem] h-[4rem] pl-[1rem] pt-[0.8rem] pr-[0.8rem] pb-[0.6rem] placeholder:text-black-500 border border-solid border-gray-300 rounded-[0.8rem] placeholder:text-[1.3rem]";
+	"w-[9rem] h-[4rem] pl-[1rem] pt-[0.8rem] pr-[0.8rem] pb-[0.6rem] placeholder:text-black-500 border border-solid border-gray-300 rounded-[0.8rem] placeholder:text-[1.3rem]";
 
 export const FiltersPriceRange = ({
 	handleFilterUpdate,
