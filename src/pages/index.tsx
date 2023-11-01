@@ -20,6 +20,8 @@ import { Card } from "@/components/Product/Card";
 
 import FiltersContainer from "@/components/filters/FiltersContainer";
 import { useRouter } from "next/router";
+import { getCategories } from "@/services/getCategories";
+import { getManufacturers } from "@/services/getManufacturers";
 
 const defaultQueries = {
 	TypeID: 0,
@@ -127,6 +129,15 @@ export const getServerSideProps = async ({
 	};
 
 	const queryKey = ["amount", search];
+
+	await queryClient.prefetchQuery({
+		queryKey: ["categories"],
+		queryFn: getCategories,
+	});
+	await queryClient.prefetchQuery({
+		queryKey: ["manufacturers"],
+		queryFn: getManufacturers,
+	});
 
 	await queryClient.prefetchQuery({
 		queryKey,
