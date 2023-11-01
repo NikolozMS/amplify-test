@@ -1,9 +1,11 @@
 import React, { useMemo, useRef, useState } from "react";
 import {
+	HydrationBoundary,
 	QueryClient,
 	dehydrate,
 	useInfiniteQuery,
 	useQuery,
+	useQueryClient,
 } from "@tanstack/react-query";
 import Head from "next/head";
 
@@ -33,6 +35,8 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		...defaultQueries,
 		...query,
 	});
+
+	const queryClient = useQueryClient();
 
 	const { query: browserQuery } = useRouter();
 
@@ -76,41 +80,42 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 
 			<div className="flex flex-col items-start justify-start max-w-[104rem]  mx-auto mt-[3.2rem]">
 				<BreadCrumb />
+				<HydrationBoundary state={dehydrate(queryClient)}>
+					<div className="flex gap-8 mt-8 w-full">
+						<FiltersContainer
+							isLoading={isLoading}
+							search={search}
+							query={query}
+							setSearch={setSearch}
+							foundAmount={data?.count ?? 0}
+						/>
 
-				<div className="flex gap-8 mt-8 w-full">
-					<FiltersContainer
-						isLoading={isLoading}
-						search={search}
-						query={query}
-						setSearch={setSearch}
-						foundAmount={data?.count ?? 0}
-					/>
-
-					<main className="flex flex-col flex-1">
-						<ProductHeader foundAmount={data?.count ?? 0} />
-						<button
-							onClick={() => {
-								pageRef.current--;
-								fetchPreviousPage();
-							}}
-						>
-							prev{" "}
-						</button>
-						<button
-							onClick={() => {
-								pageRef.current++;
-								fetchNextPage();
-							}}
-						>
-							next{" "}
-						</button>
-						<section className="flex flex-col md:gap-[1rem] w-full  mt-[1.6rem]">
-							{products?.pages[pageRef.current].items?.map((item) => (
-								<Card key={item.car_id} item={item} />
-							))}
-						</section>
-					</main>
-				</div>
+						<main className="flex flex-col flex-1">
+							<ProductHeader foundAmount={data?.count ?? 0} />
+							<button
+								onClick={() => {
+									pageRef.current--;
+									fetchPreviousPage();
+								}}
+							>
+								prev{" "}
+							</button>
+							<button
+								onClick={() => {
+									pageRef.current++;
+									fetchNextPage();
+								}}
+							>
+								next{" "}
+							</button>
+							<section className="flex flex-col md:gap-[1rem] w-full  mt-[1.6rem]">
+								{products?.pages[pageRef.current].items?.map((item) => (
+									<Card key={item.car_id} item={item} />
+								))}
+							</section>
+						</main>
+					</div>
+				</HydrationBoundary>
 			</div>
 		</>
 	);
