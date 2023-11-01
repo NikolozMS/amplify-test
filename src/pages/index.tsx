@@ -12,8 +12,9 @@ import { ParsedUrlQuery } from "querystring";
 import FiltersContainer from "@/components/filters/FiltersContainer";
 import { ProductHeader } from "@/components/Product/ProductHeader";
 import { SearchTypes } from "@/types/searchTypes";
-import { Layout } from "@/components/Layout";
+
 import { getProducts } from "@/services/getProducts";
+import { Card } from "@/components/Product/Card";
 
 // const FiltersContainer = dynamic(
 // 	() => import("@/components/filters/FiltersContainer")
@@ -59,12 +60,17 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		...query,
 	});
 
+	console.log("query", query);
+	console.log("search", search);
+
 	const prods = useQuery({
 		queryKey: ["prods", search],
 		queryFn: () => getProducts(search as ParsedUrlQuery),
+		// enabled: JSON.stringify(search) === JSON.stringify(query),
+		// enabled: false, ?? query != search?
 	});
 
-	console.log(prods);
+	console.log(prods.isLoading);
 
 	const { isLoading, data } = useQuery({
 		queryKey: ["amount", search],
@@ -78,28 +84,31 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 				<link rel="icon" href="/favicon.ico" />
 				<title>MyAuto</title>
 			</Head>
-			<Layout>
-				<div className="flex flex-col items-start justify-start max-w-[146rem]  mx-auto mt-[3.2rem]">
-					<BreadCrumb />
 
-					<div className="flex gap-8 mt-8 w-full">
-						{/* <Suspense fallback={<div>Loading...</div>}> */}
-						<FiltersContainer
-							isLoading={isLoading}
-							search={search}
-							query={query}
-							setSearch={setSearch}
-							foundAmount={data?.count ?? 0}
-						/>
-						{/* </Suspense> */}
-						<main className="border border-solid border-black-900 flex flex-col flex-1 ">
-							<ProductHeader foundAmount={data?.count ?? 0} />
+			<div className="flex flex-col items-start justify-start max-w-[100rem]  mx-auto mt-[3.2rem]">
+				<BreadCrumb />
 
-							<section className="border border-solid bg-red-500 w-full h-[400px]"></section>
-						</main>
-					</div>
+				<div className="flex gap-8 mt-8 w-full">
+					{/* <Suspense fallback={<div>Loading...</div>}> */}
+					<FiltersContainer
+						isLoading={isLoading}
+						search={search}
+						query={query}
+						setSearch={setSearch}
+						foundAmount={data?.count ?? 0}
+					/>
+					{/* </Suspense> */}
+					<main className="flex flex-col flex-1">
+						<ProductHeader foundAmount={data?.count ?? 0} />
+
+						<section className="flex flex-col gap-[1rem] w-full  mt-[1.6rem]">
+							{prods.data?.items.map((item) => (
+								<Card key={item.car_id} item={item} />
+							))}
+						</section>
+					</main>
 				</div>
-			</Layout>
+			</div>
 		</>
 	);
 };

@@ -5,7 +5,7 @@ const commonStyle = "text-[1.2rem] font-neue";
 const grayTextClassname = "text-black-600 " + commonStyle;
 
 export const BreadCrumb = memo(() => (
-	<div className="flex items-center justify-start">
+	<div className="hidden md:flex items-center justify-start">
 		<span className={grayTextClassname}>მთავარი</span>
 		<Arrow />
 		<span className={grayTextClassname}>ძიება</span>

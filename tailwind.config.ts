@@ -28,6 +28,7 @@ const config: Config = {
 				},
 				gray: {
 					100: "#C2C9D8",
+					50: "#F2F3F6",
 					200: "#E2E5EB",
 					300: "#D8DBE2",
 				},
@@ -35,6 +36,8 @@ const config: Config = {
 					800: "#FF3B30",
 				},
 				green: {
+					100: "#e8f8f0",
+					110: "#8DDDB5",
 					300: "#26B753",
 					200: "#59D8C9",
 					150: "#CEE8E5",

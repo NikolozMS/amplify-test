@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 import {
 	HydrationBoundary,
@@ -14,6 +14,7 @@ import Head from "next/head";
 
 import "@/styles/globals.css";
 import "@/styles/normalize.css";
+import { Layout } from "@/components/Layout";
 
 const queryClientConfig = {
 	defaultOptions: {
@@ -26,7 +27,9 @@ const queryClientConfig = {
 };
 
 const App = ({ Component, pageProps }: AppProps) => {
-	const [queryClient] = useState(() => new QueryClient(queryClientConfig));
+	const [queryClient] = React.useState(
+		() => new QueryClient(queryClientConfig)
+	);
 	return (
 		<>
 			<Head>
@@ -35,7 +38,9 @@ const App = ({ Component, pageProps }: AppProps) => {
 			<QueryClientProvider client={queryClient}>
 				<HydrationBoundary state={pageProps.dehydratedState}>
 					<Header />
-					<Component {...pageProps} />
+					<Layout>
+						<Component {...pageProps} />
+					</Layout>
 				</HydrationBoundary>
 				<ReactQueryDevtools initialIsOpen={false} />
 			</QueryClientProvider>

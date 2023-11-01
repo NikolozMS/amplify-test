@@ -52,7 +52,7 @@ export const ProductHeader = ({ foundAmount }: { foundAmount: number }) => {
 	}, [query.Period, query.SortOrder]);
 
 	return (
-		<header className="w-full flex justify-between items-center">
+		<header className="hidden w-full md:flex justify-between items-center">
 			<h5 className="text-[1.6rem] text-black-800">{foundAmount} განცხადება</h5>
 			<div className="flex items-center gap-[0.8rem] w-[33rem]">
 				<DropDown

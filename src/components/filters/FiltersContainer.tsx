@@ -34,7 +34,7 @@ const FiltersContainer = ({
 	};
 
 	return (
-		<aside className="flex flex-col bg-white border-solid border border-black-200 w-[250px] h-[520px] rounded-t-[1.1rem]">
+		<aside className="hidden md:flex flex-col bg-white border-solid border border-black-200 w-[250px] h-[520px] rounded-t-[1.1rem]">
 			<FiltersHeader search={search} setSearch={setSearch} />
 			<FiltersBody search={search} handleFilterUpdate={handleFilterUpdate} />
 			<FiltersAction
