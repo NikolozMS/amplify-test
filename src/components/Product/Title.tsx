@@ -1,6 +1,6 @@
 export const Title = ({
 	year,
-	name = "LAND ROVER Range Rover Evoque",
+	name = "Hyundai Veloster 356",
 }: {
 	year: number;
 	name?: string;

@@ -14,7 +14,6 @@ import Head from "next/head";
 
 import "@/styles/globals.css";
 import "@/styles/normalize.css";
-import { Layout } from "@/components/Layout";
 
 const queryClientConfig = {
 	defaultOptions: {
@@ -38,9 +37,7 @@ const App = ({ Component, pageProps }: AppProps) => {
 			<QueryClientProvider client={queryClient}>
 				<HydrationBoundary state={pageProps.dehydratedState}>
 					<Header />
-					<Layout>
-						<Component {...pageProps} />
-					</Layout>
+					<Component {...pageProps} />
 				</HydrationBoundary>
 				<ReactQueryDevtools initialIsOpen={false} />
 			</QueryClientProvider>

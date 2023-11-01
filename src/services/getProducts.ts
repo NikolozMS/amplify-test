@@ -8,7 +8,8 @@ type ProductsResponse = {
 	meta: Pagination;
 };
 export const getProducts = async (
-	query: ParsedUrlQuery
+	query: ParsedUrlQuery,
+	page: { pageParam: number }
 ): Promise<ProductsResponse> => {
 	let url = "https://api2.myauto.ge/ka/products/";
 
@@ -19,7 +20,7 @@ export const getProducts = async (
 			queryString = queryString.replace("PriceTo=NaN", "");
 		}
 
-		url += "?" + queryString;
+		url += `?Page=${page.pageParam}` + queryString;
 	}
 
 	const resp = await axios.get(url);

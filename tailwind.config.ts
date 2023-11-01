@@ -36,6 +36,7 @@ const config: Config = {
 					800: "#FF3B30",
 				},
 				green: {
+					50: "#EEFBF1",
 					100: "#e8f8f0",
 					110: "#8DDDB5",
 					300: "#26B753",

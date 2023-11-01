@@ -1,81 +1,64 @@
-// import dynamic from "next/dynamic";
-import React, { useState } from "react";
-import { QueryClient, dehydrate, useQuery } from "@tanstack/react-query";
+import React, { useMemo, useRef, useState } from "react";
+import {
+	QueryClient,
+	dehydrate,
+	useInfiniteQuery,
+	useQuery,
+} from "@tanstack/react-query";
 import Head from "next/head";
-// import { Suspense } from "react";
 
 import { BreadCrumb } from "@/components/BreadCrumbs";
 
 import { getCount } from "@/services/getCount";
 import { ParsedUrlQuery } from "querystring";
 
-import FiltersContainer from "@/components/filters/FiltersContainer";
 import { ProductHeader } from "@/components/Product/ProductHeader";
 import { SearchTypes } from "@/types/searchTypes";
 
 import { getProducts } from "@/services/getProducts";
 import { Card } from "@/components/Product/Card";
 
-// const FiltersContainer = dynamic(
-// 	() => import("@/components/filters/FiltersContainer")
-// );
+import FiltersContainer from "@/components/filters/FiltersContainer";
 
-export const getServerSideProps = async ({
-	query,
-}: {
-	query: ParsedUrlQuery;
-}) => {
-	const queryClient = new QueryClient();
-
-	const search = {
-		TypeID: "0",
-		CurrencyID: "3",
-		...query,
-	};
-
-	const queryKey = ["amount", search];
-
-	await queryClient.prefetchQuery({
-		queryKey,
-		queryFn: () => getCount(search as ParsedUrlQuery),
-	});
-
-	await queryClient.prefetchQuery({
-		queryKey: ["prods", search],
-		queryFn: () => getProducts(search as ParsedUrlQuery),
-	});
-
-	return {
-		props: {
-			query,
-			dehydratedState: dehydrate(queryClient),
-		},
-	};
+const defaultQueries = {
+	TypeID: 0,
+	CurrencyID: 3,
 };
 
 const Home = ({ query }: { query: ParsedUrlQuery }) => {
 	const [search, setSearch] = useState<SearchTypes>({
-		TypeID: 0,
-		CurrencyID: 3,
+		...defaultQueries,
 		...query,
 	});
 
-	console.log("query", query);
-	console.log("search", search);
+	const pageRef = useRef(0);
 
-	const prods = useQuery({
-		queryKey: ["prods", search],
-		queryFn: () => getProducts(search as ParsedUrlQuery),
-		// enabled: JSON.stringify(search) === JSON.stringify(query),
-		// enabled: false, ?? query != search?
+	const searchAndQuery = useMemo(() => {
+		return {
+			...search,
+			...query,
+		};
+	}, []);
+
+	console.log(searchAndQuery);
+
+	const {
+		data: products,
+		fetchNextPage,
+		fetchPreviousPage,
+	} = useInfiniteQuery({
+		queryKey: ["prods", searchAndQuery],
+		queryFn: (page) => getProducts(search as ParsedUrlQuery, page),
+		getNextPageParam: ({ meta }) => meta.current_page + 1,
+		getPreviousPageParam: ({ meta }) => meta.current_page - 1,
+		initialPageParam: 1,
 	});
-
-	console.log(prods.isLoading);
 
 	const { isLoading, data } = useQuery({
 		queryKey: ["amount", search],
 		queryFn: ({ signal }) => getCount(search as ParsedUrlQuery, signal),
 	});
+
 	return (
 		<>
 			<Head>
@@ -85,11 +68,10 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 				<title>MyAuto</title>
 			</Head>
 
-			<div className="flex flex-col items-start justify-start max-w-[100rem]  mx-auto mt-[3.2rem]">
+			<div className="flex flex-col items-start justify-start max-w-[104rem]  mx-auto mt-[3.2rem]">
 				<BreadCrumb />
 
 				<div className="flex gap-8 mt-8 w-full">
-					{/* <Suspense fallback={<div>Loading...</div>}> */}
 					<FiltersContainer
 						isLoading={isLoading}
 						search={search}
@@ -97,12 +79,19 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 						setSearch={setSearch}
 						foundAmount={data?.count ?? 0}
 					/>
-					{/* </Suspense> */}
+
 					<main className="flex flex-col flex-1">
 						<ProductHeader foundAmount={data?.count ?? 0} />
-
-						<section className="flex flex-col gap-[1rem] w-full  mt-[1.6rem]">
-							{prods.data?.items.map((item) => (
+						<button
+							onClick={() => {
+								pageRef.current++;
+								fetchNextPage();
+							}}
+						>
+							next{" "}
+						</button>
+						<section className="flex flex-col md:gap-[1rem] w-full  mt-[1.6rem]">
+							{products!.pages[pageRef.current].items.map((item) => (
 								<Card key={item.car_id} item={item} />
 							))}
 						</section>
@@ -111,6 +100,48 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 			</div>
 		</>
 	);
+};
+
+export const getServerSideProps = async ({
+	query,
+}: {
+	query: ParsedUrlQuery;
+}) => {
+	const queryClient = new QueryClient();
+
+	const search = {
+		...defaultQueries,
+		...query,
+	};
+
+	const queryKey = ["amount", search];
+
+	await queryClient.prefetchQuery({
+		queryKey,
+		queryFn: () => getCount(search as any),
+	});
+
+	await queryClient.prefetchInfiniteQuery({
+		queryKey: ["prods", search],
+		queryFn: (e) =>
+			getProducts(search as any, { pageParam: e.pageParam.meta.current_page }),
+		initialPageParam: {
+			items: [],
+			meta: {
+				current_page: 0,
+				last_page: 1000,
+				per_page: 30,
+				total: 168000,
+			},
+		},
+	});
+
+	return {
+		props: {
+			query,
+			dehydratedState: dehydrate(queryClient),
+		},
+	};
 };
 
 export default Home;

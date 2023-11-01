@@ -1,8 +1,8 @@
-import { formatTimeDifference } from "@/utils/formatTimeDifference";
-
-const vipStatuses = {
-	1: "S-VIP",
-};
+import { Favorite } from "../icons/Favorite";
+import { Note } from "../icons/Note";
+import { Shape } from "../icons/Shape";
+import { CardViewsGenerator } from "./CardViewsGenerator";
+import { StatusBadge } from "./StatusBadge";
 
 export const StatusAndViews = ({
 	views,
@@ -13,16 +13,17 @@ export const StatusAndViews = ({
 	status_id: number;
 	order_date: string;
 }) => (
-	<footer className="hidden md:block md:mt-auto">
-		<div className="flex items-center">
-			<p className="bg-main flex items-center rounded-full font-bold text-[1rem] text-white text-uppercase h-[2rem] px-[1rem] py-[0.3rem] mr-[1.6rem] whitespace-nowrap">
-				{vipStatuses[status_id as keyof typeof vipStatuses]}
-			</p>
-			<span className="text-[1.2rem] text-black-600"> {views} ნახვა </span>
-			<span className="inline-flex w-[2px] h-[2px] round-full bg-[#8996ae] mx-[8px] "></span>
-			<span className="text-[1.2rem] text-black-600">
-				{formatTimeDifference(order_date)}{" "}
-			</span>
+	<footer className="mt-auto">
+		<div className="flex items-center justify-between">
+			<div className="flex items-center">
+				<StatusBadge status={status_id} />
+				<CardViewsGenerator order_date={order_date} views={views} />
+			</div>
+			<div className="flex items-center gap-[1.6rem]">
+				<Note />
+				<Shape fill="#6F7383" />
+				<Favorite />
+			</div>
 		</div>
 	</footer>
 );
