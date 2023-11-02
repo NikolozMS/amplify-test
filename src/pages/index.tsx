@@ -41,6 +41,8 @@ const Home = ({
 		...query,
 	});
 
+	console.log(dehydratedState);
+
 	const { query: browserQuery } = useRouter();
 
 	const pageRef = useRef(0);
