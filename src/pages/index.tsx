@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
 	QueryClient,
 	dehydrate,
@@ -15,27 +15,17 @@ import { ParsedUrlQuery } from "querystring";
 import { ProductHeader } from "@/components/Product/ProductHeader";
 import { SearchTypes } from "@/types/searchTypes";
 
-import { getProducts } from "@/services/getProducts";
+import { ProductsResponse, getProducts } from "@/services/getProducts";
 
 import FiltersContainer from "@/components/filters/FiltersContainer";
 import { useRouter } from "next/router";
 import { Card } from "@/components/Product/Card";
+import { ProductType } from "@/types/ProductType";
 
 const defaultQueries = {
 	TypeID: 0,
 	CurrencyID: 3,
 };
-
-// function getPreviousPageParam(pageData, allPages) {
-// 	// Calculate the parameter for the previous page
-// 	console.log("pageData", pageData);
-// 	console.log("allPages", allPages);
-// 	const currentPageIndex = allPages.findIndex((page) => page === pageData);
-// 	if (currentPageIndex > 0) {
-// 		return allPages[currentPageIndex - 1].cursor; // Assuming there is a 'cursor' field in your data
-// 	}
-// 	return null; // Return null if there are no more previous pages
-// }
 
 const Home = ({ query }: { query: ParsedUrlQuery }) => {
 	const [search, setSearch] = useState<SearchTypes>({
@@ -43,11 +33,18 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		...query,
 	});
 
+	const renderCountRef = useRef(0);
+
 	const { query: browserQuery } = useRouter();
 
 	const pageRef = useRef(0);
 
 	const searchAndQuery = useMemo(() => {
+		if (renderCountRef.current > 0) {
+			return search;
+		}
+
+		renderCountRef.current++;
 		return {
 			...search,
 			...query,
@@ -59,26 +56,24 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		data: products,
 		fetchNextPage,
 		fetchPreviousPage,
-	} = useInfiniteQuery({
-		// @ts-ignore
-		queryKey: ["prods", searchAndQuery],
-		queryFn: (page) =>
+	} = useInfiniteQuery(
+		["prods", searchAndQuery],
+		(page) =>
 			getProducts(
 				{ ...search, ...browserQuery } as ParsedUrlQuery,
-				page as any
+				page as { pageParam: number }
 			),
-		getNextPageParam: ({ meta }) => meta.current_page + 1,
-		getPreviousPageParam: ({ meta }) => meta.current_page - 1,
-		initialData: 1,
-		staleTime: 1000 * 60 * 60,
-	});
-
-	console.log("products", products);
+		{
+			getNextPageParam: ({ meta }) => meta.current_page + 1,
+			// getPreviousPageParam: ({ meta }) => meta.current_page - 1,
+			staleTime: 1000 * 60 * 60,
+			keepPreviousData: true,
+		}
+	);
 
 	const { isLoading, data } = useQuery({
 		queryKey: ["amount", search],
-		queryFn: ({ signal }) =>
-			getCount({ ...search, ...browserQuery } as ParsedUrlQuery, signal),
+		queryFn: ({ signal }) => getCount({ ...search } as ParsedUrlQuery, signal),
 	});
 
 	return (
@@ -121,8 +116,9 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 							next{" "}
 						</button>
 						<section className="flex flex-col md:gap-[1rem] w-full  mt-[1.6rem]">
-							{/* @ts-ignore */}
-							{products?.pages[pageRef.current].items?.map((item) => (
+							{(
+								products?.pages[products.pages.length - 1] as ProductsResponse
+							).items?.map((item: ProductType) => (
 								<Card key={item.car_id} item={item} />
 							))}
 						</section>
