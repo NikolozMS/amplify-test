@@ -5,7 +5,6 @@ import {
 	dehydrate,
 	useInfiniteQuery,
 	useQuery,
-	useQueryClient,
 } from "@tanstack/react-query";
 import Head from "next/head";
 
@@ -41,8 +40,6 @@ const Home = ({
 		...defaultQueries,
 		...query,
 	});
-
-	const queryClient = useQueryClient();
 
 	const { query: browserQuery } = useRouter();
 
