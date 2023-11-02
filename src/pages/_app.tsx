@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { Header } from "@/components/Header";
@@ -31,7 +31,6 @@ const App = ({ Component, pageProps }: AppProps) => {
 			<QueryClientProvider client={queryClient}>
 				<Header />
 				<Component {...pageProps} />
-				<ReactQueryDevtools initialIsOpen={false} />
 			</QueryClientProvider>
 		</>
 	);
