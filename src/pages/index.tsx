@@ -26,16 +26,16 @@ const defaultQueries = {
 	CurrencyID: 3,
 };
 
-function getPreviousPageParam(pageData, allPages) {
-	// Calculate the parameter for the previous page
-	console.log("pageData", pageData);
-	console.log("allPages", allPages);
-	const currentPageIndex = allPages.findIndex((page) => page === pageData);
-	if (currentPageIndex > 0) {
-		return allPages[currentPageIndex - 1].cursor; // Assuming there is a 'cursor' field in your data
-	}
-	return null; // Return null if there are no more previous pages
-}
+// function getPreviousPageParam(pageData, allPages) {
+// 	// Calculate the parameter for the previous page
+// 	console.log("pageData", pageData);
+// 	console.log("allPages", allPages);
+// 	const currentPageIndex = allPages.findIndex((page) => page === pageData);
+// 	if (currentPageIndex > 0) {
+// 		return allPages[currentPageIndex - 1].cursor; // Assuming there is a 'cursor' field in your data
+// 	}
+// 	return null; // Return null if there are no more previous pages
+// }
 
 const Home = ({ query }: { query: ParsedUrlQuery }) => {
 	const [search, setSearch] = useState<SearchTypes>({
@@ -55,18 +55,20 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		};
 	}, [browserQuery]);
 
-	const queryKey = ["prods", searchAndQuery];
-
 	const {
 		data: products,
 		fetchNextPage,
 		fetchPreviousPage,
 	} = useInfiniteQuery({
-		queryKey,
+		// @ts-ignore
+		queryKey: ["prods", searchAndQuery],
 		queryFn: (page) =>
-			getProducts({ ...search, ...browserQuery } as ParsedUrlQuery, page),
+			getProducts(
+				{ ...search, ...browserQuery } as ParsedUrlQuery,
+				page as any
+			),
 		getNextPageParam: ({ meta }) => meta.current_page + 1,
-		getPreviousPageParam,
+		getPreviousPageParam: ({ meta }) => meta.current_page - 1,
 		initialData: 1,
 		staleTime: 1000 * 60 * 60,
 	});
@@ -119,6 +121,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 							next{" "}
 						</button>
 						<section className="flex flex-col md:gap-[1rem] w-full  mt-[1.6rem]">
+							{/* @ts-ignore */}
 							{products?.pages[pageRef.current].items?.map((item) => (
 								<Card key={item.car_id} item={item} />
 							))}
