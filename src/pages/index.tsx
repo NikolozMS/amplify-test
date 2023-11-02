@@ -30,7 +30,13 @@ const defaultQueries = {
 	CurrencyID: 3,
 };
 
-const Home = ({ query }: { query: ParsedUrlQuery }) => {
+const Home = ({
+	query,
+	dehydratedState,
+}: {
+	query: ParsedUrlQuery;
+	dehydratedState: any;
+}) => {
 	const [search, setSearch] = useState<SearchTypes>({
 		...defaultQueries,
 		...query,
@@ -80,7 +86,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 
 			<div className="flex flex-col items-start justify-start max-w-[104rem]  mx-auto mt-[3.2rem]">
 				<BreadCrumb />
-				<HydrationBoundary state={dehydrate(queryClient)}>
+				<HydrationBoundary state={dehydratedState}>
 					<div className="flex gap-8 mt-8 w-full">
 						<FiltersContainer
 							isLoading={isLoading}
