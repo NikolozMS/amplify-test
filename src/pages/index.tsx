@@ -15,7 +15,7 @@ import { ParsedUrlQuery } from "querystring";
 import { ProductHeader } from "@/components/Product/ProductHeader";
 import { SearchTypes } from "@/types/searchTypes";
 
-import { ProductsResponse, getProducts } from "@/services/getProducts";
+import { getProducts } from "@/services/getProducts";
 
 import FiltersContainer from "@/components/filters/FiltersContainer";
 import { useRouter } from "next/router";
@@ -29,9 +29,11 @@ const defaultQueries = {
 	CurrencyID: 3,
 };
 
+// renderCountRef conditions
+
 // 0 - from server
-// 1 - from search
-// 2 - from query
+// 1 - from search (state)
+// 2 - from browser route query
 
 // when to look what
 
@@ -48,8 +50,6 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 	});
 
 	const renderCountRef = useRef(0);
-
-	const pageRef = useRef(0);
 
 	const searchAndQuery = useMemo(() => {
 		// with server query
@@ -76,10 +76,6 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		return search;
 	}, [asPath, search]);
 
-	console.log("search", search);
-	console.log("query", query);
-	console.log("browserQuery", browserQuery);
-
 	const handleSearchSubmit = async () => {
 		renderCountRef.current = 1;
 		const queryString = objectToQueryString(search as ParsedUrlQuery);
@@ -89,10 +85,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 	const {
 		data: products,
 		fetchNextPage,
-		fetchPreviousPage,
 		hasNextPage,
-		isFetchingNextPage,
-		hasPreviousPage,
 	} = useInfiniteQuery(
 		[
 			"prods",
@@ -113,7 +106,9 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 					: undefined,
 			getPreviousPageParam: ({ meta }) =>
 				meta.current_page - 1 > 1 ? meta.current_page - 1 : undefined,
-			staleTime: 1000 * 60 * 60,
+
+			staleTime: 1000 * 60 * 3,
+			cacheTime: 1000 * 60 * 3,
 			keepPreviousData: true,
 		}
 	);
@@ -158,30 +153,25 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 							}}
 						/>
 						<SearchChips />
-						<button
-							onClick={() => {
-								pageRef.current--;
-								fetchPreviousPage();
-							}}
-							disabled={!hasPreviousPage}
-						>
-							prev{" "}
-						</button>
-						<button
-							onClick={() => {
-								pageRef.current++;
-								fetchNextPage();
-							}}
-							disabled={!hasNextPage || isFetchingNextPage}
-						>
-							next{" "}
-						</button>
+
 						<section className="flex flex-col md:gap-[1rem] w-full  md:mt-[1.6rem]">
-							{(
-								products?.pages[products.pages.length - 1] as ProductsResponse
-							)?.items?.map((item: ProductType) => (
-								<Card key={item.car_id} item={item} />
-							))}
+							{products?.pages.map((page, pageIndex) =>
+								page?.items?.map((item: ProductType, itemsIndex) => {
+									const isLast =
+										pageIndex === products.pages.length - 1 &&
+										itemsIndex === page.items.length - 1;
+
+									return (
+										<Card
+											onLoadMoreClick={fetchNextPage}
+											key={item.car_id}
+											item={item}
+											isLast={isLast}
+											hasMore={hasNextPage}
+										/>
+									);
+								})
+							)}
 						</section>
 					</main>
 				</div>

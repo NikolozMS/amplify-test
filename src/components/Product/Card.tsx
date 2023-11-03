@@ -8,10 +8,46 @@ import { MobileCardFooter } from "./MobileCardFooter";
 import { MobileCarFeaturesAndLocations } from "./MobileCarFeaturesAndLocations";
 
 import { ProductType } from "@/types/ProductType";
+import { InfiniteQueryObserverResult } from "@tanstack/react-query";
+import { useCallback } from "react";
+import { ProductsResponse } from "@/services/getProducts";
 
-export const Card = ({ item }: { item: ProductType }) => {
+export const Card = ({
+	item,
+	hasMore,
+	isLast,
+	onLoadMoreClick,
+}: {
+	item: ProductType;
+	hasMore?: boolean;
+	isLast: boolean;
+	onLoadMoreClick: () => Promise<
+		InfiniteQueryObserverResult<ProductsResponse, unknown>
+	>;
+}) => {
+	const handleObserver = useCallback(
+		(e: HTMLAnchorElement) => {
+			const observer = new IntersectionObserver(async (entries) => {
+				const { isIntersecting } = entries[0];
+
+				if (isIntersecting && hasMore) {
+					await onLoadMoreClick();
+					observer.unobserve(e);
+				}
+			});
+
+			if (e) {
+				observer.observe(e);
+			}
+		},
+		[hasMore]
+	);
+
 	return (
-		<article className="flex flex-col w-full p-[1.6rem] duration-100 hover:bg-green-100 border border-solid border-white hover:border-green-110 pb-7 md:pb-[1.6rem] md:rounded-xl bg-white md:w-[780px]">
+		<article
+			ref={isLast ? handleObserver : null}
+			className="flex flex-col w-full p-[1.6rem] duration-100 hover:bg-green-100 border border-solid border-white hover:border-green-110 pb-7 md:pb-[1.6rem] md:rounded-xl bg-white md:w-[780px]"
+		>
 			<article className="flex flex-col md:flex-row w-full gap-[1.6rem]">
 				<MobileHeading
 					usd={item.price_usd}
