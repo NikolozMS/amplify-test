@@ -13,8 +13,6 @@ export const getProducts = async (
 ): Promise<ProductsResponse> => {
 	let url = "https://api2.myauto.ge/ka/products/";
 
-	// console.log(page);
-
 	if (query) {
 		let queryString = objectToQueryString(query);
 

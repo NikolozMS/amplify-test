@@ -54,6 +54,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		if (renderCountRef.current === 0) {
 			renderCountRef.current = 2;
 			return {
+				...defaultQueries,
 				...search,
 				...query,
 			};
@@ -81,10 +82,10 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		isFetchingNextPage,
 		hasPreviousPage,
 	} = useInfiniteQuery(
-		["prods", browserQuery],
+		["prods", { ...query, ...browserQuery }],
 		(page) =>
 			getProducts(
-				browserQuery as ParsedUrlQuery,
+				{ ...query, ...browserQuery } as ParsedUrlQuery,
 				page as { pageParam: number }
 			),
 		{
@@ -153,7 +154,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 						<section className="flex flex-col md:gap-[1rem] w-full  mt-[1.6rem]">
 							{(
 								products?.pages[products.pages.length - 1] as ProductsResponse
-							).items?.map((item: ProductType) => (
+							)?.items?.map((item: ProductType) => (
 								<Card key={item.car_id} item={item} />
 							))}
 						</section>
@@ -207,33 +208,9 @@ export const getServerSideProps = async ({
 		}
 	);
 
-	// await queryClient.prefetchInfiniteQuery({
-	// 	queryKey: ["prods", search],
-	// 	queryFn: (e) =>
-	// 		getProducts(search as any, { pageParam: e.pageParam.meta.current_page }),
-	// 	initialPageParam: {
-	// 		items: [],
-	// 		meta: {
-	// 			current_page: 0,
-	// 			last_page: 1000,
-	// 			per_page: 30,
-	// 			total: 168000,
-	// 		},
-	// 	},
-	// 	initialData: {
-	// 		items: [],
-	// 		meta: {
-	// 			current_page: 0,
-	// 			last_page: 1000,
-	// 			per_page: 30,
-	// 			total: 168000,
-	// 		},
-	// 	},
-	// });
-
 	return {
 		props: {
-			query,
+			query: { ...search },
 			dehydratedState: dehydrate(queryClient),
 		},
 	};
