@@ -45,7 +45,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 
 	const renderCountRef = useRef(0);
 
-	const { query: browserQuery } = useRouter();
+	const { query: browserQuery, push, pathname } = useRouter();
 
 	const pageRef = useRef(0);
 
@@ -61,6 +61,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 
 		// with shallow route query
 		if (renderCountRef.current === 1) {
+			renderCountRef.current = 2;
 			return {
 				...search,
 				...browserQuery,
@@ -70,7 +71,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		// search filters without any queries
 
 		return search;
-	}, [browserQuery]);
+	}, [browserQuery, search]);
 
 	const {
 		data: products,
@@ -80,10 +81,10 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		isFetchingNextPage,
 		hasPreviousPage,
 	} = useInfiniteQuery(
-		["prods", searchAndQuery],
+		["prods", browserQuery],
 		(page) =>
 			getProducts(
-				{ ...search, ...browserQuery } as ParsedUrlQuery,
+				browserQuery as ParsedUrlQuery,
 				page as { pageParam: number }
 			),
 		{
@@ -99,12 +100,8 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 	);
 
 	const { isLoading, data } = useQuery({
-		queryKey: [
-			"amount",
-			{ ...search, ...(renderCountRef.current === 0 ? { browserQuery } : {}) },
-			...(renderCountRef.current === 0 ? [browserQuery] : [{}]),
-		],
-		queryFn: ({ signal }) => getCount(search as ParsedUrlQuery, signal),
+		queryKey: ["amount", searchAndQuery],
+		queryFn: ({ signal }) => getCount(searchAndQuery as ParsedUrlQuery, signal),
 	});
 
 	return (
@@ -132,9 +129,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 						<ProductHeader
 							foundAmount={data?.count ?? 0}
 							handleRenderRef={() => {
-								console.log("before", renderCountRef.current);
-								renderCountRef.current = 0;
-								console.log("after", renderCountRef.current);
+								renderCountRef.current = 1;
 							}}
 						/>
 						<button
