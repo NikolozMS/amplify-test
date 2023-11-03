@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useMemo } from "react";
 import { objectToQueryString } from "@/utils/objectToQueryString";
 import { useQueryClient } from "@tanstack/react-query";
+import { SearchTypes } from "@/types/searchTypes";
 
 const periods = [
 	{ label: "ბოლო 1 საათი", value: "1h" },
@@ -26,14 +27,20 @@ const sortOrder = [
 ];
 
 export const ProductHeader = ({
-	foundAmount,
 	handleRenderRef,
+	productsAndCountCommonKey,
 }: {
-	foundAmount: number;
 	handleRenderRef: () => void;
+	productsAndCountCommonKey: SearchTypes;
 }) => {
 	const { push, query } = useRouter();
 	const queryClient = useQueryClient();
+
+	const amount: { count: number } | undefined = queryClient.getQueryData(
+		["amount", productsAndCountCommonKey],
+		{ exact: true }
+	);
+
 	const initialValues = useMemo(() => {
 		let values: Record<string, string> = {};
 
@@ -60,7 +67,9 @@ export const ProductHeader = ({
 
 	return (
 		<header className="hidden w-full md:flex justify-between items-center">
-			<h5 className="text-[1.6rem] text-black-800">{foundAmount} განცხადება</h5>
+			<h5 className="text-[1.6rem] text-black-800">
+				{amount?.count} განცხადება
+			</h5>
 			<div className="flex items-center gap-[0.8rem] w-[33rem]">
 				<DropDown
 					data={periods}
@@ -101,8 +110,6 @@ export const ProductHeader = ({
 
 						queryObj.SortOrder = newFilter.SortOrder;
 						const qs = objectToQueryString(queryObj);
-
-						await queryClient.refetchQueries(["amount"]);
 
 						push(`/?${qs}`, undefined, {
 							shallow: true,
