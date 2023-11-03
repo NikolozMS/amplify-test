@@ -119,6 +119,10 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		keepPreviousData: true,
 	});
 
+	const amountForProducts = useMemo(() => {
+		return data?.count ?? 0;
+	}, [asPath]);
+
 	return (
 		<>
 			<Head>
@@ -143,12 +147,9 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 
 					<main className="flex flex-col flex-1">
 						<ProductHeader
+							foundAmount={amountForProducts}
 							handleRenderRef={() => {
 								renderCountRef.current = 1;
-							}}
-							productsAndCountCommonKey={{
-								...(renderCountRef.current === 0 ? query : {}),
-								...browserQuery,
 							}}
 						/>
 						<SearchChips />
