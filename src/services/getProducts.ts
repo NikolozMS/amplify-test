@@ -3,7 +3,7 @@ import { objectToQueryString } from "@/utils/objectToQueryString";
 import axios from "axios";
 import { ParsedUrlQuery } from "querystring";
 
-type ProductsResponse = {
+export type ProductsResponse = {
 	items: ProductType[];
 	meta: Pagination;
 };
@@ -13,6 +13,8 @@ export const getProducts = async (
 ): Promise<ProductsResponse> => {
 	let url = "https://api2.myauto.ge/ka/products/";
 
+	// console.log(page);
+
 	if (query) {
 		let queryString = objectToQueryString(query);
 
@@ -20,7 +22,7 @@ export const getProducts = async (
 			queryString = queryString.replace("PriceTo=NaN", "");
 		}
 
-		url += `?Page=${page.pageParam}&` + queryString;
+		url += `?Page=${page?.pageParam || 1}&` + queryString;
 	}
 
 	const resp = await axios.get(url);

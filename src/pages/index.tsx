@@ -15,16 +15,27 @@ import { ParsedUrlQuery } from "querystring";
 import { ProductHeader } from "@/components/Product/ProductHeader";
 import { SearchTypes } from "@/types/searchTypes";
 
-import { getProducts } from "@/services/getProducts";
-import { Card } from "@/components/Product/Card";
+import { ProductsResponse, getProducts } from "@/services/getProducts";
 
 import FiltersContainer from "@/components/filters/FiltersContainer";
 import { useRouter } from "next/router";
+import { Card } from "@/components/Product/Card";
+import { ProductType } from "@/types/ProductType";
 
 const defaultQueries = {
 	TypeID: 0,
 	CurrencyID: 3,
 };
+
+// 0 - from server
+// 1 - from search
+// 2 - from query
+
+// when to look what
+
+// first render - server
+// shallow route - query
+// other - seearch
 
 const Home = ({ query }: { query: ParsedUrlQuery }) => {
 	const [search, setSearch] = useState<SearchTypes>({
@@ -32,35 +43,65 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		...query,
 	});
 
+	const renderCountRef = useRef(0);
+
 	const { query: browserQuery } = useRouter();
 
 	const pageRef = useRef(0);
 
 	const searchAndQuery = useMemo(() => {
-		return {
-			...search,
-			...query,
-			...browserQuery,
-		};
-	}, [browserQuery]);
+		// with server query
+		if (renderCountRef.current === 0) {
+			renderCountRef.current = 2;
+			return {
+				...search,
+				...query,
+			};
+		}
+
+		// with shallow route query
+		if (renderCountRef.current === 1) {
+			renderCountRef.current = 2;
+			return {
+				...search,
+				...browserQuery,
+			};
+		}
+
+		// search filters without any queries
+
+		return search;
+	}, [browserQuery, search]);
 
 	const {
 		data: products,
 		fetchNextPage,
 		fetchPreviousPage,
-	} = useInfiniteQuery({
-		queryKey: ["prods", searchAndQuery],
-		queryFn: (page) =>
-			getProducts({ ...search, ...browserQuery } as ParsedUrlQuery, page),
-		getNextPageParam: ({ meta }) => meta.current_page + 1,
-		getPreviousPageParam: ({ meta }) => meta.current_page - 1,
-		initialPageParam: 1,
-	});
+		hasNextPage,
+		isFetchingNextPage,
+		hasPreviousPage,
+	} = useInfiniteQuery(
+		["prods", browserQuery],
+		(page) =>
+			getProducts(
+				browserQuery as ParsedUrlQuery,
+				page as { pageParam: number }
+			),
+		{
+			getNextPageParam: ({ meta }) =>
+				meta.current_page + 1 <= meta.last_page
+					? meta.current_page + 1
+					: undefined,
+			getPreviousPageParam: ({ meta }) =>
+				meta.current_page - 1 > 1 ? meta.current_page - 1 : undefined,
+			staleTime: 1000 * 60 * 60,
+			keepPreviousData: true,
+		}
+	);
 
 	const { isLoading, data } = useQuery({
-		queryKey: ["amount", search],
-		queryFn: ({ signal }) =>
-			getCount({ ...search, ...browserQuery } as ParsedUrlQuery, signal),
+		queryKey: ["amount", searchAndQuery],
+		queryFn: ({ signal }) => getCount(searchAndQuery as ParsedUrlQuery, signal),
 	});
 
 	return (
@@ -85,12 +126,18 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 					/>
 
 					<main className="flex flex-col flex-1">
-						<ProductHeader foundAmount={data?.count ?? 0} />
+						<ProductHeader
+							foundAmount={data?.count ?? 0}
+							handleRenderRef={() => {
+								renderCountRef.current = 1;
+							}}
+						/>
 						<button
 							onClick={() => {
 								pageRef.current--;
 								fetchPreviousPage();
 							}}
+							disabled={!hasPreviousPage}
 						>
 							prev{" "}
 						</button>
@@ -99,11 +146,14 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 								pageRef.current++;
 								fetchNextPage();
 							}}
+							disabled={!hasNextPage || isFetchingNextPage}
 						>
 							next{" "}
 						</button>
 						<section className="flex flex-col md:gap-[1rem] w-full  mt-[1.6rem]">
-							{products?.pages[pageRef.current].items?.map((item) => (
+							{(
+								products?.pages[products.pages.length - 1] as ProductsResponse
+							).items?.map((item: ProductType) => (
 								<Card key={item.car_id} item={item} />
 							))}
 						</section>
@@ -133,20 +183,53 @@ export const getServerSideProps = async ({
 		queryFn: () => getCount(search as any),
 	});
 
-	await queryClient.prefetchInfiniteQuery({
-		queryKey: ["prods", search],
-		queryFn: (e) =>
-			getProducts(search as any, { pageParam: e.pageParam.meta.current_page }),
-		initialPageParam: {
-			items: [],
-			meta: {
-				current_page: 0,
-				last_page: 1000,
-				per_page: 30,
-				total: 168000,
+	await queryClient.prefetchInfiniteQuery(
+		["prods", search],
+		() =>
+			getProducts(search as any, {
+				pageParam: 1,
+			}),
+		{
+			initialData: {
+				pageParams: [1],
+				pages: [
+					{
+						items: [],
+						meta: {
+							current_page: 0,
+							last_page: 1000,
+							per_page: 30,
+							total: 168000,
+						},
+					},
+				],
 			},
-		},
-	});
+		}
+	);
+
+	// await queryClient.prefetchInfiniteQuery({
+	// 	queryKey: ["prods", search],
+	// 	queryFn: (e) =>
+	// 		getProducts(search as any, { pageParam: e.pageParam.meta.current_page }),
+	// 	initialPageParam: {
+	// 		items: [],
+	// 		meta: {
+	// 			current_page: 0,
+	// 			last_page: 1000,
+	// 			per_page: 30,
+	// 			total: 168000,
+	// 		},
+	// 	},
+	// 	initialData: {
+	// 		items: [],
+	// 		meta: {
+	// 			current_page: 0,
+	// 			last_page: 1000,
+	// 			per_page: 30,
+	// 			total: 168000,
+	// 		},
+	// 	},
+	// });
 
 	return {
 		props: {
