@@ -21,6 +21,7 @@ import FiltersContainer from "@/components/filters/FiltersContainer";
 import { useRouter } from "next/router";
 import { Card } from "@/components/Product/Card";
 import { ProductType } from "@/types/ProductType";
+import { SearchChips } from "@/components/SearchChips";
 
 const defaultQueries = {
 	TypeID: 0,
@@ -114,10 +115,10 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 				<title>MyAuto</title>
 			</Head>
 
-			<div className="flex flex-col items-start justify-start max-w-[104rem]  mx-auto mt-[3.2rem]">
+			<div className="flex flex-col items-start justify-start max-w-[104rem]  mx-auto md:mt-[3.2rem]">
 				<BreadCrumb />
 
-				<div className="flex gap-8 mt-8 w-full">
+				<div className="flex gap-8 md:mt-8 w-full">
 					<FiltersContainer
 						isLoading={isLoading}
 						search={search}
@@ -133,7 +134,8 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 								renderCountRef.current = 1;
 							}}
 						/>
-						<button
+						<SearchChips />
+						{/* <button
 							onClick={() => {
 								pageRef.current--;
 								fetchPreviousPage();
@@ -150,8 +152,8 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 							disabled={!hasNextPage || isFetchingNextPage}
 						>
 							next{" "}
-						</button>
-						<section className="flex flex-col md:gap-[1rem] w-full  mt-[1.6rem]">
+						</button> */}
+						<section className="flex flex-col md:gap-[1rem] w-full  md:mt-[1.6rem]">
 							{(
 								products?.pages[products.pages.length - 1] as ProductsResponse
 							)?.items?.map((item: ProductType) => (
@@ -181,7 +183,7 @@ export const getServerSideProps = async ({
 
 	await queryClient.prefetchQuery({
 		queryKey,
-		queryFn: () => getCount(search as any),
+		queryFn: ({ signal }) => getCount(search as any, signal),
 	});
 
 	await queryClient.prefetchInfiniteQuery(
