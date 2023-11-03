@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
 	QueryClient,
 	dehydrate,
@@ -45,7 +45,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 
 	const renderCountRef = useRef(0);
 
-	const { query: browserQuery, push, pathname } = useRouter();
+	const { query: browserQuery } = useRouter();
 
 	const pageRef = useRef(0);
 
