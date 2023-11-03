@@ -86,6 +86,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 
 	const {
 		data: products,
+		isLoading: productsAreLoading,
 		fetchNextPage,
 		hasNextPage,
 		isFetchingNextPage,
@@ -180,12 +181,18 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 									);
 								})
 							)}
-							{hasNextPage && isFetchingNextPage && (
+
+							{productsAreLoading && (
+								<div className="flex justify-center text-[1.2rem] weight-[500]">
+									Loading...
+								</div>
+							)}
+							{isFetchingNextPage && (
 								<div className="flex justify-center text-[1.2rem] weight-[500]">
 									Loading {(products?.pages?.length || 0) + 1}th page{" "}
 								</div>
 							)}
-							{!hasNextPage && (
+							{!hasNextPage && !productsAreLoading && (
 								<div className="flex justify-center text-[1.2rem] weight-[500]">
 									{" "}
 									No more content{" "}
