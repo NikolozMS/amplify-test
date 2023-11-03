@@ -65,6 +65,7 @@ export const SearchChips = () => {
 		<div className="flex items-center pl-[1.3rem] overflow-x-scroll w-full h-[6.4rem] md:hidden">
 			{chips.map((chip) => (
 				<span
+					key={chip}
 					style={{ boxShadow: " 0px 3px 21px 0px rgba(39, 42, 55, 0.04)" }}
 					className="flex items-center justify-center rounded-[100px] bg-white text-[1.2rem] text-black-700 h-[3.2rem] px-[1.2rem] mr-[.8rem]"
 				>

@@ -22,6 +22,7 @@ import { useRouter } from "next/router";
 import { Card } from "@/components/Product/Card";
 import { ProductType } from "@/types/ProductType";
 import { SearchChips } from "@/components/SearchChips";
+import { objectToQueryString } from "@/utils/objectToQueryString";
 
 const defaultQueries = {
 	TypeID: 0,
@@ -39,14 +40,14 @@ const defaultQueries = {
 // other - seearch
 
 const Home = ({ query }: { query: ParsedUrlQuery }) => {
+	const { query: browserQuery, push, asPath } = useRouter();
 	const [search, setSearch] = useState<SearchTypes>({
 		...defaultQueries,
 		...query,
+		...browserQuery,
 	});
 
 	const renderCountRef = useRef(0);
-
-	const { query: browserQuery } = useRouter();
 
 	const pageRef = useRef(0);
 
@@ -73,7 +74,17 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		// search filters without any queries
 
 		return search;
-	}, [browserQuery, search]);
+	}, [asPath, search]);
+
+	console.log("search", search);
+	console.log("query", query);
+	console.log("browserQuery", browserQuery);
+
+	const handleSearchSubmit = async () => {
+		renderCountRef.current = 1;
+		const queryString = objectToQueryString(search as ParsedUrlQuery);
+		push(`/?${queryString}`, undefined, { shallow: true });
+	};
 
 	const {
 		data: products,
@@ -83,10 +94,16 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		isFetchingNextPage,
 		hasPreviousPage,
 	} = useInfiniteQuery(
-		["prods", { ...query, ...browserQuery }],
+		[
+			"prods",
+			{ ...(renderCountRef.current === 0 ? query : {}), ...browserQuery },
+		],
 		(page) =>
 			getProducts(
-				{ ...query, ...browserQuery } as ParsedUrlQuery,
+				{
+					...(renderCountRef.current === 0 ? query : {}),
+					...browserQuery,
+				} as ParsedUrlQuery,
 				page as { pageParam: number }
 			),
 		{
@@ -104,7 +121,12 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 	const { isLoading, data } = useQuery({
 		queryKey: ["amount", searchAndQuery],
 		queryFn: ({ signal }) => getCount(searchAndQuery as ParsedUrlQuery, signal),
+		keepPreviousData: true,
 	});
+
+	const amountForProducts = useMemo(() => {
+		return data?.count ?? 0;
+	}, [asPath]);
 
 	return (
 		<>
@@ -125,17 +147,18 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 						query={query}
 						setSearch={setSearch}
 						foundAmount={data?.count ?? 0}
+						handleSearchSubmit={handleSearchSubmit}
 					/>
 
 					<main className="flex flex-col flex-1">
 						<ProductHeader
-							foundAmount={data?.count ?? 0}
+							foundAmount={amountForProducts}
 							handleRenderRef={() => {
 								renderCountRef.current = 1;
 							}}
 						/>
 						<SearchChips />
-						{/* <button
+						<button
 							onClick={() => {
 								pageRef.current--;
 								fetchPreviousPage();
@@ -152,7 +175,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 							disabled={!hasNextPage || isFetchingNextPage}
 						>
 							next{" "}
-						</button> */}
+						</button>
 						<section className="flex flex-col md:gap-[1rem] w-full  md:mt-[1.6rem]">
 							{(
 								products?.pages[products.pages.length - 1] as ProductsResponse
@@ -183,7 +206,7 @@ export const getServerSideProps = async ({
 
 	await queryClient.prefetchQuery({
 		queryKey,
-		queryFn: ({ signal }) => getCount(search as any, signal),
+		queryFn: () => getCount(search as any),
 	});
 
 	await queryClient.prefetchInfiniteQuery(

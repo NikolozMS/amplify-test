@@ -14,6 +14,7 @@ export const FiltersAction = ({
 		<button
 			onClick={onSubmit}
 			className="bg-main w-full h-[3.2rem] rounded-[.6rem] text-[1.4rem] text-white"
+			disabled={isLoading}
 		>
 			ძებნა {isLoading ? "..." : foundAmount}
 		</button>

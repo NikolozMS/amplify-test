@@ -4,33 +4,30 @@ import { FiltersAction } from "./FiltersAction";
 import { FiltersBody } from "./FiltersBody";
 import { FiltersHeader } from "./FiltersHeader";
 
-import { objectToQueryString } from "@/utils/objectToQueryString";
-
-import { useRouter } from "next/router";
 import { SearchTypes } from "@/types/searchTypes";
 import { ParsedUrlQuery } from "querystring";
+import { useQueryClient } from "@tanstack/react-query";
 
 const FiltersContainer = ({
 	setSearch,
 	search,
 	isLoading,
 	foundAmount,
+	handleSearchSubmit,
 }: {
 	query: ParsedUrlQuery;
 	setSearch: Dispatch<SetStateAction<SearchTypes>>;
 	search: SearchTypes;
 	isLoading: boolean;
 	foundAmount?: number;
+	handleSearchSubmit: () => void;
 }) => {
-	const { push } = useRouter();
-
+	const queryClient = useQueryClient();
 	const handleFilterUpdate = async (newFilter: SearchTypes) => {
 		setSearch((prevState) => ({ ...prevState, ...newFilter }));
-	};
-
-	const handleSubmit = async () => {
-		const queryString = objectToQueryString(search as ParsedUrlQuery);
-		push(`/?${queryString}`, undefined, { shallow: true });
+		setTimeout(() => {
+			queryClient.removeQueries({ type: "inactive", queryKey: ["amount"] });
+		}, 500);
 	};
 
 	return (
@@ -40,7 +37,7 @@ const FiltersContainer = ({
 			<FiltersAction
 				foundAmount={foundAmount}
 				isLoading={isLoading}
-				onSubmit={handleSubmit}
+				onSubmit={handleSearchSubmit}
 			/>
 		</aside>
 	);

@@ -128,7 +128,10 @@ export const FiltersBody = ({
 			</div>
 			<hr className="mt-[2.4rem] bg-gray-100" />
 			<div>
-				<FiltersPriceRange handleFilterUpdate={handleFilterUpdate} />
+				<FiltersPriceRange
+					search={search}
+					handleFilterUpdate={handleFilterUpdate}
+				/>
 			</div>
 		</div>
 	);
