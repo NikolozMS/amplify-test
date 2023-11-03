@@ -43,6 +43,7 @@ const defaultQueries = {
 
 const Home = ({ query }: { query: ParsedUrlQuery }) => {
 	const { query: browserQuery, push, asPath } = useRouter();
+
 	const [search, setSearch] = useState<SearchTypes>({
 		...defaultQueries,
 		...query,
@@ -50,6 +51,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 	});
 
 	const renderCountRef = useRef(0);
+	const updateAmountRef = useRef(0);
 
 	const searchAndQuery = useMemo(() => {
 		// with server query
@@ -86,6 +88,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		data: products,
 		fetchNextPage,
 		hasNextPage,
+		isFetchingNextPage,
 	} = useInfiniteQuery(
 		[
 			"prods",
@@ -110,6 +113,9 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 			staleTime: 1000 * 60 * 3,
 			cacheTime: 1000 * 60 * 3,
 			keepPreviousData: true,
+			onSuccess: () => {
+				updateAmountRef.current++;
+			},
 		}
 	);
 
@@ -117,11 +123,13 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		queryKey: ["amount", searchAndQuery],
 		queryFn: ({ signal }) => getCount(searchAndQuery as ParsedUrlQuery, signal),
 		keepPreviousData: true,
+		staleTime: 1000 * 60 * 3,
+		cacheTime: 1000 * 60 * 3,
 	});
 
 	const amountForProducts = useMemo(() => {
 		return data?.count ?? 0;
-	}, [asPath]);
+	}, [updateAmountRef.current]);
 
 	return (
 		<>
@@ -172,6 +180,17 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 									);
 								})
 							)}
+							{hasNextPage && isFetchingNextPage && (
+								<div className="flex justify-center text-[1.2rem] weight-[500]">
+									Loading {(products?.pages?.length || 0) + 1}th page{" "}
+								</div>
+							)}
+							{!hasNextPage && (
+								<div className="flex justify-center text-[1.2rem] weight-[500]">
+									{" "}
+									No more content{" "}
+								</div>
+							)}
 						</section>
 					</main>
 				</div>
@@ -197,6 +216,8 @@ export const getServerSideProps = async ({
 	await queryClient.prefetchQuery({
 		queryKey,
 		queryFn: () => getCount(search as any),
+		staleTime: 1000 * 60 * 3,
+		cacheTime: 1000 * 60 * 3,
 	});
 
 	await queryClient.prefetchInfiniteQuery(
