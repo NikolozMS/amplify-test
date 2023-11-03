@@ -27,6 +27,16 @@ const defaultQueries = {
 	CurrencyID: 3,
 };
 
+// 0 - from server
+// 1 - from search
+// 2 - from query
+
+// when to look what
+
+// first render - server
+// shallow route - query
+// other - seearch
+
 const Home = ({ query }: { query: ParsedUrlQuery }) => {
 	const [search, setSearch] = useState<SearchTypes>({
 		...defaultQueries,
@@ -40,18 +50,26 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 	const pageRef = useRef(0);
 
 	const searchAndQuery = useMemo(() => {
-		if (renderCountRef.current > 0) {
-			// shallow route
-			return search;
+		// with server query
+		if (renderCountRef.current === 0) {
+			renderCountRef.current = 2;
+			return {
+				...search,
+				...query,
+			};
 		}
 
-		// first render
-		renderCountRef.current++;
-		return {
-			...search,
-			...query,
-			...browserQuery,
-		};
+		// with shallow route query
+		if (renderCountRef.current === 1) {
+			return {
+				...search,
+				...browserQuery,
+			};
+		}
+
+		// search filters without any queries
+
+		return search;
 	}, [browserQuery]);
 
 	const {
@@ -83,8 +101,8 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 	const { isLoading, data } = useQuery({
 		queryKey: [
 			"amount",
-			search,
-			...(renderCountRef.current > 0 ? [browserQuery] : [{}]),
+			{ ...search, ...(renderCountRef.current === 0 ? { browserQuery } : {}) },
+			...(renderCountRef.current === 0 ? [browserQuery] : [{}]),
 		],
 		queryFn: ({ signal }) => getCount(search as ParsedUrlQuery, signal),
 	});
@@ -114,7 +132,9 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 						<ProductHeader
 							foundAmount={data?.count ?? 0}
 							handleRenderRef={() => {
+								console.log("before", renderCountRef.current);
 								renderCountRef.current = 0;
+								console.log("after", renderCountRef.current);
 							}}
 						/>
 						<button
