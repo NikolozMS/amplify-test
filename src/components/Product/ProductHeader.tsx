@@ -2,6 +2,7 @@ import { DropDown } from "../common/DropDown";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 import { objectToQueryString } from "@/utils/objectToQueryString";
+import { useQueryClient } from "@tanstack/react-query";
 
 const periods = [
 	{ label: "ბოლო 1 საათი", value: "1h" },
@@ -24,9 +25,15 @@ const sortOrder = [
 	{ label: "გაარბენი ზრდადი", value: "6" },
 ];
 
-export const ProductHeader = ({ foundAmount }: { foundAmount: number }) => {
+export const ProductHeader = ({
+	foundAmount,
+	handleRenderRef,
+}: {
+	foundAmount: number;
+	handleRenderRef: () => void;
+}) => {
 	const { push, query } = useRouter();
-
+	const queryClient = useQueryClient();
 	const initialValues = useMemo(() => {
 		let values: Record<string, string> = {};
 
@@ -62,16 +69,19 @@ export const ProductHeader = ({ foundAmount }: { foundAmount: number }) => {
 					label=""
 					input={initialValues.Period}
 					searchString="Period"
-					setFormInputs={(newFilter) => {
+					setFormInputs={async (newFilter) => {
 						const queryObj = {
 							...query,
 						};
+
+						handleRenderRef();
 
 						queryObj.Period = newFilter.Period;
 						const qs = objectToQueryString(queryObj);
 
 						push(`/?${qs}`, undefined, {
 							shallow: true,
+							scroll: true,
 						});
 					}}
 				/>
@@ -82,16 +92,21 @@ export const ProductHeader = ({ foundAmount }: { foundAmount: number }) => {
 					label=""
 					input={initialValues.SortOrder}
 					searchString="SortOrder"
-					setFormInputs={(newFilter) => {
+					setFormInputs={async (newFilter) => {
 						const queryObj = {
 							...query,
 						};
 
+						handleRenderRef();
+
 						queryObj.SortOrder = newFilter.SortOrder;
 						const qs = objectToQueryString(queryObj);
 
+						await queryClient.refetchQueries(["amount"]);
+
 						push(`/?${qs}`, undefined, {
 							shallow: true,
+							scroll: true,
 						});
 					}}
 				/>

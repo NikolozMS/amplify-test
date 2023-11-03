@@ -41,9 +41,11 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 
 	const searchAndQuery = useMemo(() => {
 		if (renderCountRef.current > 0) {
+			// shallow route
 			return search;
 		}
 
+		// first render
 		renderCountRef.current++;
 		return {
 			...search,
@@ -56,6 +58,9 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 		data: products,
 		fetchNextPage,
 		fetchPreviousPage,
+		hasNextPage,
+		isFetchingNextPage,
+		hasPreviousPage,
 	} = useInfiniteQuery(
 		["prods", searchAndQuery],
 		(page) =>
@@ -64,16 +69,24 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 				page as { pageParam: number }
 			),
 		{
-			getNextPageParam: ({ meta }) => meta.current_page + 1,
-			// getPreviousPageParam: ({ meta }) => meta.current_page - 1,
+			getNextPageParam: ({ meta }) =>
+				meta.current_page + 1 <= meta.last_page
+					? meta.current_page + 1
+					: undefined,
+			getPreviousPageParam: ({ meta }) =>
+				meta.current_page - 1 > 1 ? meta.current_page - 1 : undefined,
 			staleTime: 1000 * 60 * 60,
 			keepPreviousData: true,
 		}
 	);
 
 	const { isLoading, data } = useQuery({
-		queryKey: ["amount", search],
-		queryFn: ({ signal }) => getCount({ ...search } as ParsedUrlQuery, signal),
+		queryKey: [
+			"amount",
+			search,
+			...(renderCountRef.current > 0 ? [browserQuery] : [{}]),
+		],
+		queryFn: ({ signal }) => getCount(search as ParsedUrlQuery, signal),
 	});
 
 	return (
@@ -98,12 +111,18 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 					/>
 
 					<main className="flex flex-col flex-1">
-						<ProductHeader foundAmount={data?.count ?? 0} />
+						<ProductHeader
+							foundAmount={data?.count ?? 0}
+							handleRenderRef={() => {
+								renderCountRef.current = 0;
+							}}
+						/>
 						<button
 							onClick={() => {
 								pageRef.current--;
 								fetchPreviousPage();
 							}}
+							disabled={!hasPreviousPage}
 						>
 							prev{" "}
 						</button>
@@ -112,6 +131,7 @@ const Home = ({ query }: { query: ParsedUrlQuery }) => {
 								pageRef.current++;
 								fetchNextPage();
 							}}
+							disabled={!hasNextPage || isFetchingNextPage}
 						>
 							next{" "}
 						</button>
