@@ -57,7 +57,7 @@ export const Card = ({
 					status_id={item.status_id}
 				/>
 
-				<figure className="w-[343px] md:w-[178px]">
+				<figure className="min-w-[343px] max-w-[600px] md:min-w-[178px] md:max-w-[178px]">
 					<Image
 						width={178}
 						height={140}
