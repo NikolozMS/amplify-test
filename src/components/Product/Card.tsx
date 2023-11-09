@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 import { CarFeaturesAndPrice } from "./CarFeaturesAndPrice";
 import { TitleAndLocation } from "./TitleAndLocation";
 import { StatusAndViews } from "./StatusAndViews";
@@ -58,13 +56,14 @@ export const Card = ({
 				/>
 
 				<figure className="min-w-[343px] max-w-[600px] md:min-w-[178px] md:max-w-[178px]">
-					<Image
+					<img
 						width={178}
 						height={140}
+						alt="myauto car"
 						src={`https://static.my.ge/myauto/photos/${item.photo}/thumbs/${item.car_id}_1.jpg?v=${item.photo_ver}`}
-						alt=""
 						className="rounded-3xl md:rounded-xl"
 						sizes="100vw"
+						loading="lazy"
 						style={{
 							width: "100%",
 							height: "auto",
